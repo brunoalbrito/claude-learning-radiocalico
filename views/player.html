@@ -414,8 +414,12 @@
         fadeUpdate(trackTitle, data.title || '—');
         fadeUpdate(trackArtist, data.artist || '');
 
-        const parts = [data.album, data.date].filter(Boolean);
-        fadeUpdate(trackAlbum, parts.join(' · '));
+        const albumParts = [data.album, data.date].filter(Boolean);
+        const quality = data.bit_depth && data.sample_rate
+          ? `${data.bit_depth}-bit / ${(data.sample_rate / 1000).toFixed(1)} kHz`
+          : '';
+        const albumLine = [...albumParts, quality].filter(Boolean).join(' · ');
+        fadeUpdate(trackAlbum, albumLine);
 
         if (changed && document.title !== `${data.artist} — ${data.title}`) {
           document.title = `${data.artist} — ${data.title} · Radio Calico`;

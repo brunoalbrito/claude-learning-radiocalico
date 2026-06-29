@@ -9,13 +9,13 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --mint:         #D8F2D5;
-      --forest:       #1F4E23;
-      --teal:         #38A29D;
-      --orange:       #EFA63C;
-      --charcoal:     #231F20;
-      --cream:        #F5EADA;
-      --white:        #FFFFFF;
+      --mint:     #D8F2D5;
+      --forest:   #1F4E23;
+      --teal:     #38A29D;
+      --orange:   #EFA63C;
+      --charcoal: #231F20;
+      --cream:    #F5EADA;
+      --white:    #FFFFFF;
     }
 
     body {
@@ -172,14 +172,8 @@
       color: #666;
     }
 
-    .quality-block {
-      margin-top: 6px;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
     .quality-row {
+      margin-top: 6px;
       font-size: 0.8rem;
       color: #888;
     }
@@ -195,7 +189,7 @@
       padding: 16px 24px;
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
     }
 
     .btn-play {
@@ -221,20 +215,21 @@
       pointer-events: none;
     }
 
-    .volume-group {
+    .btn-vol {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 8px;
-      flex: 1;
+      border-radius: 4px;
+      transition: opacity 0.2s;
     }
 
-    .volume-icon {
-      flex-shrink: 0;
-      color: var(--charcoal);
-      line-height: 1;
-    }
+    .btn-vol:hover { opacity: 0.6; }
 
-    .volume-icon svg {
+    .btn-vol svg {
       width: 20px;
       height: 20px;
       fill: var(--charcoal);
@@ -243,7 +238,7 @@
     input[type="range"] {
       -webkit-appearance: none;
       appearance: none;
-      width: 100%;
+      flex: 1;
       height: 4px;
       border-radius: 2px;
       background: #ddd;
@@ -276,12 +271,13 @@
       border-radius: 2px;
     }
 
-    .status-text {
+    .elapsed-time {
+      font-family: "Montserrat", sans-serif;
       font-size: 0.8rem;
       color: #999;
       white-space: nowrap;
-      margin-left: auto;
       flex-shrink: 0;
+      letter-spacing: 0.04em;
     }
 
     /* ── Error banner ────────────────────────────── */
@@ -311,13 +307,8 @@
 
     /* ── Responsive ──────────────────────────────── */
     @media (max-width: 520px) {
-      .card-body {
-        grid-template-columns: 1fr;
-      }
-
-      .art {
-        height: 160px;
-      }
+      .card-body { grid-template-columns: 1fr; }
+      .art { height: 160px; }
     }
   </style>
 </head>
@@ -341,43 +332,38 @@
 
         <div class="info">
           <div class="live-badge">
-            <span class="live-dot" id="liveDot"></span>
+            <span class="live-dot"></span>
             Live
           </div>
-
           <div class="track-title">Radio Calico</div>
           <div class="track-subtitle">Lossless continuous stream</div>
-
-          <div class="quality-block">
-            <div class="quality-row"><strong>Stream quality:</strong> HLS Lossless</div>
-            <div class="quality-row" id="hlsInfo">Connecting…</div>
-          </div>
+          <div class="quality-row"><strong>Format:</strong> HLS Lossless</div>
         </div>
 
       </div>
 
       <div class="controls">
         <button class="btn-play" id="btnPlay" aria-label="Play">
-          <!-- Play icon -->
           <svg id="iconPlay" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M8 5v14l11-7z"/>
           </svg>
-          <!-- Pause icon (hidden) -->
           <svg id="iconPause" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display:none">
             <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
           </svg>
         </button>
 
-        <div class="volume-group">
-          <span class="volume-icon" id="volIcon">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
-            </svg>
-          </span>
-          <input type="range" id="volSlider" min="0" max="100" value="100" aria-label="Volume">
-        </div>
+        <button class="btn-vol" id="btnVol" aria-label="Mute">
+          <svg id="iconVolOn" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+          </svg>
+          <svg id="iconVolMuted" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display:none">
+            <path d="M16.5 12A4.5 4.5 0 0 0 14 7.97v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06A8.99 8.99 0 0 0 17.73 19L19 20.27 20.27 19 5.27 2 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+          </svg>
+        </button>
 
-        <span class="status-text" id="statusText">Stopped</span>
+        <input type="range" id="volSlider" min="0" max="100" value="100" aria-label="Volume">
+
+        <span class="elapsed-time" id="elapsedTime">0:00:00</span>
       </div>
     </div>
 
@@ -394,28 +380,54 @@
   <script>
     const STREAM_URL = 'https://d3d4yli4hf5bmh.cloudfront.net/hls/live.m3u8';
 
-    const audio      = document.getElementById('audioEl');
-    const btnPlay    = document.getElementById('btnPlay');
-    const iconPlay   = document.getElementById('iconPlay');
-    const iconPause  = document.getElementById('iconPause');
-    const volSlider  = document.getElementById('volSlider');
-    const statusText = document.getElementById('statusText');
-    const hlsInfo    = document.getElementById('hlsInfo');
-    const eqBars     = document.getElementById('eqBars');
-    const errorBanner = document.getElementById('errorBanner');
+    const audio        = document.getElementById('audioEl');
+    const btnPlay      = document.getElementById('btnPlay');
+    const iconPlay     = document.getElementById('iconPlay');
+    const iconPause    = document.getElementById('iconPause');
+    const btnVol       = document.getElementById('btnVol');
+    const iconVolOn    = document.getElementById('iconVolOn');
+    const iconVolMuted = document.getElementById('iconVolMuted');
+    const volSlider    = document.getElementById('volSlider');
+    const elapsedTime  = document.getElementById('elapsedTime');
+    const eqBars       = document.getElementById('eqBars');
+    const errorBanner  = document.getElementById('errorBanner');
 
     let hls = null;
     let playing = false;
+    let lastVolume = 1;
+    let elapsedSeconds = 0;
+    let elapsedTimer = null;
+
+    function formatElapsed(s) {
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const sec = s % 60;
+      return `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+    }
+
+    function startTimer() {
+      if (elapsedTimer) return;
+      elapsedTimer = setInterval(() => {
+        elapsedSeconds++;
+        elapsedTime.textContent = formatElapsed(elapsedSeconds);
+      }, 1000);
+    }
+
+    function resetTimer() {
+      clearInterval(elapsedTimer);
+      elapsedTimer = null;
+      elapsedSeconds = 0;
+      elapsedTime.textContent = '0:00:00';
+    }
 
     function setPlaying(state) {
       playing = state;
-      iconPlay.style.display  = state ? 'none'  : '';
-      iconPause.style.display = state ? ''      : 'none';
+      iconPlay.style.display  = state ? 'none' : '';
+      iconPause.style.display = state ? ''     : 'none';
       btnPlay.setAttribute('aria-label', state ? 'Pause' : 'Play');
       eqBars.classList.toggle('paused', !state);
+      if (state) { startTimer(); } else { resetTimer(); }
     }
-
-    function setStatus(msg) { statusText.textContent = msg; }
 
     function showError(msg) {
       errorBanner.textContent = msg;
@@ -427,7 +439,25 @@
     }
 
     function updateVolTrack() {
-      volSlider.style.setProperty('--vol-pct', volSlider.value + '%');
+      const muted = audio.muted || volSlider.value == 0;
+      volSlider.style.setProperty('--vol-pct', muted ? '0%' : volSlider.value + '%');
+      iconVolOn.style.display    = muted ? 'none' : '';
+      iconVolMuted.style.display = muted ? ''     : 'none';
+      btnVol.setAttribute('aria-label', muted ? 'Unmute' : 'Mute');
+    }
+
+    function toggleMute() {
+      if (audio.muted || volSlider.value == 0) {
+        audio.muted = false;
+        if (volSlider.value == 0) {
+          volSlider.value = Math.round(lastVolume * 100) || 100;
+          audio.volume = lastVolume || 1;
+        }
+      } else {
+        lastVolume = audio.volume;
+        audio.muted = true;
+      }
+      updateVolTrack();
     }
 
     function initHls() {
@@ -436,28 +466,11 @@
         hls.loadSource(STREAM_URL);
         hls.attachMedia(audio);
 
-        hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
-          const level = data.levels[hls.currentLevel >= 0 ? hls.currentLevel : 0];
-          if (level) {
-            const sr = level.audioCodec || '';
-            hlsInfo.textContent = `Manifest loaded · ${data.levels.length} level(s) · ${sr || 'HLS'}`;
-          } else {
-            hlsInfo.textContent = 'Manifest loaded';
-          }
-          hideError();
-        });
-
-        hls.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
-          const level = hls.levels[data.level];
-          if (level && level.bitrate) {
-            hlsInfo.textContent = `Bitrate: ${Math.round(level.bitrate / 1000)} kbps`;
-          }
-        });
+        hls.on(Hls.Events.MANIFEST_PARSED, () => hideError());
 
         hls.on(Hls.Events.ERROR, (_, data) => {
           if (data.fatal) {
             showError(`Stream error (${data.type}). Retrying…`);
-            setStatus('Error');
             if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
               hls.startLoad();
             } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
@@ -470,9 +483,7 @@
           }
         });
       } else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
-        // Native HLS (Safari)
         audio.src = STREAM_URL;
-        hlsInfo.textContent = 'Native HLS playback';
       } else {
         showError('Your browser does not support HLS streaming.');
       }
@@ -480,36 +491,31 @@
 
     async function togglePlay() {
       hideError();
-
       if (!playing) {
         if (!hls && !audio.src) initHls();
-        setStatus('Buffering…');
         try {
           await audio.play();
         } catch (e) {
           showError('Playback blocked: ' + e.message);
-          setStatus('Stopped');
         }
       } else {
         audio.pause();
-        setStatus('Stopped');
         setPlaying(false);
       }
     }
 
-    audio.addEventListener('playing', () => {
-      setPlaying(true);
-      setStatus('Live');
-    });
-
-    audio.addEventListener('waiting', () => setStatus('Buffering…'));
-    audio.addEventListener('stalled', () => setStatus('Stalled…'));
-    audio.addEventListener('pause',   () => { setPlaying(false); setStatus('Stopped'); });
+    audio.addEventListener('playing', () => setPlaying(true));
+    audio.addEventListener('pause',   () => setPlaying(false));
+    audio.addEventListener('waiting', () => { clearInterval(elapsedTimer); elapsedTimer = null; });
+    audio.addEventListener('playing', () => { if (playing) startTimer(); });
 
     btnPlay.addEventListener('click', togglePlay);
+    btnVol.addEventListener('click', toggleMute);
 
     volSlider.addEventListener('input', () => {
+      audio.muted = false;
       audio.volume = volSlider.value / 100;
+      if (volSlider.value > 0) lastVolume = audio.volume;
       updateVolTrack();
     });
 

@@ -9,6 +9,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api', require('./src/routes'));
 
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'player.html'));
+});
+
 app.listen(PORT, () => {
   console.log(`Frontend running at http://localhost:${PORT}`);
 });

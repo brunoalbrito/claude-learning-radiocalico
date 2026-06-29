@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Radio Calico — Live</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --mint:         #D8F2D5;
+      --forest:       #1F4E23;
+      --teal:         #38A29D;
+      --orange:       #EFA63C;
+      --charcoal:     #231F20;
+      --cream:        #F5EADA;
+      --white:        #FFFFFF;
+    }
+
+    body {
+      font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--charcoal);
+      background: var(--cream);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Nav ─────────────────────────────────────── */
+    nav {
+      background: var(--teal);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    nav img.logo {
+      height: 32px;
+      width: 32px;
+      border-radius: 50%;
+    }
+
+    nav .brand {
+      font-family: "Montserrat", sans-serif;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--white);
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Main layout ─────────────────────────────── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 24px 64px;
+      gap: 32px;
+    }
+
+    /* ── Player card ─────────────────────────────── */
+    .player-card {
+      background: var(--white);
+      border-radius: 8px;
+      box-shadow: 0 4px 24px rgba(35, 31, 32, 0.12);
+      width: 100%;
+      max-width: 680px;
+      overflow: hidden;
+    }
+
+    .card-body {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: 220px;
+    }
+
+    /* ── Album art ───────────────────────────────── */
+    .art {
+      position: relative;
+      background: var(--forest);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .art-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 5px;
+      height: 64px;
+    }
+
+    .art-bars span {
+      display: block;
+      width: 8px;
+      background: var(--mint);
+      border-radius: 4px 4px 0 0;
+      animation: equalizer 1.2s ease-in-out infinite;
+      transform-origin: bottom;
+    }
+
+    .art-bars span:nth-child(1) { height: 30%; animation-delay: 0s;    }
+    .art-bars span:nth-child(2) { height: 70%; animation-delay: 0.15s; }
+    .art-bars span:nth-child(3) { height: 50%; animation-delay: 0.3s;  }
+    .art-bars span:nth-child(4) { height: 90%; animation-delay: 0.45s; }
+    .art-bars span:nth-child(5) { height: 40%; animation-delay: 0.6s;  }
+    .art-bars span:nth-child(6) { height: 75%; animation-delay: 0.75s; }
+    .art-bars span:nth-child(7) { height: 55%; animation-delay: 0.9s;  }
+
+    .art-bars.paused span { animation-play-state: paused; }
+
+    @keyframes equalizer {
+      0%, 100% { transform: scaleY(1);   }
+      50%       { transform: scaleY(0.2); }
+    }
+
+    /* ── Track info ──────────────────────────────── */
+    .info {
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: "Montserrat", sans-serif;
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--white);
+      background: var(--orange);
+      padding: 3px 10px 3px 8px;
+      border-radius: 4px;
+      width: fit-content;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--white);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1;    transform: scale(1);    }
+      50%       { opacity: 0.4; transform: scale(0.75); }
+    }
+
+    .track-title {
+      font-family: "Montserrat", sans-serif;
+      font-weight: 700;
+      font-size: 1.5rem;
+      line-height: 1.2;
+      color: var(--charcoal);
+      margin-top: 4px;
+    }
+
+    .track-subtitle {
+      font-size: 0.95rem;
+      color: #666;
+    }
+
+    .quality-block {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .quality-row {
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    .quality-row strong {
+      color: var(--charcoal);
+      font-weight: 600;
+    }
+
+    /* ── Controls bar ────────────────────────────── */
+    .controls {
+      border-top: 1px solid #eee;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn-play {
+      flex-shrink: 0;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--forest);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .btn-play:hover { background: var(--teal); }
+
+    .btn-play svg {
+      width: 20px;
+      height: 20px;
+      fill: var(--white);
+      pointer-events: none;
+    }
+
+    .volume-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .volume-icon {
+      flex-shrink: 0;
+      color: var(--charcoal);
+      line-height: 1;
+    }
+
+    .volume-icon svg {
+      width: 20px;
+      height: 20px;
+      fill: var(--charcoal);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+      background: #ddd;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--teal);
+      cursor: pointer;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border: none;
+      border-radius: 50%;
+      background: var(--teal);
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      background: linear-gradient(to right, var(--teal) var(--vol-pct, 100%), #ddd var(--vol-pct, 100%));
+      height: 4px;
+      border-radius: 2px;
+    }
+
+    .status-text {
+      font-size: 0.8rem;
+      color: #999;
+      white-space: nowrap;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    /* ── Error banner ────────────────────────────── */
+    .error-banner {
+      display: none;
+      background: #fff3f3;
+      border: 1px solid #f5c6c6;
+      color: #c0392b;
+      border-radius: 4px;
+      padding: 10px 16px;
+      font-size: 0.875rem;
+      width: 100%;
+      max-width: 680px;
+    }
+
+    /* ── Footer ──────────────────────────────────── */
+    footer {
+      background: var(--cream);
+      border-top: 1px solid #e0d8cc;
+      padding: 24px;
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--forest);
+    }
+
+    footer a { color: var(--forest); }
+
+    /* ── Responsive ──────────────────────────────── */
+    @media (max-width: 520px) {
+      .card-body {
+        grid-template-columns: 1fr;
+      }
+
+      .art {
+        height: 160px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <img class="logo" src="/RadioCalicoLogoTM.png" alt="Radio Calico logo">
+    <span class="brand">Radio Calico</span>
+  </nav>
+
+  <main>
+    <div class="player-card">
+      <div class="card-body">
+
+        <div class="art" id="artPanel">
+          <div class="art-bars paused" id="eqBars">
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <div class="info">
+          <div class="live-badge">
+            <span class="live-dot" id="liveDot"></span>
+            Live
+          </div>
+
+          <div class="track-title">Radio Calico</div>
+          <div class="track-subtitle">Lossless continuous stream</div>
+
+          <div class="quality-block">
+            <div class="quality-row"><strong>Stream quality:</strong> HLS Lossless</div>
+            <div class="quality-row" id="hlsInfo">Connecting…</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="controls">
+        <button class="btn-play" id="btnPlay" aria-label="Play">
+          <!-- Play icon -->
+          <svg id="iconPlay" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+          <!-- Pause icon (hidden) -->
+          <svg id="iconPause" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display:none">
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+          </svg>
+        </button>
+
+        <div class="volume-group">
+          <span class="volume-icon" id="volIcon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+            </svg>
+          </span>
+          <input type="range" id="volSlider" min="0" max="100" value="100" aria-label="Volume">
+        </div>
+
+        <span class="status-text" id="statusText">Stopped</span>
+      </div>
+    </div>
+
+    <div class="error-banner" id="errorBanner"></div>
+  </main>
+
+  <footer>
+    &copy; 2026 Radio Calico &mdash; Ad-free &middot; Data-free &middot; Subscription-free
+  </footer>
+
+  <audio id="audioEl" preload="none"></audio>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
+  <script>
+    const STREAM_URL = 'https://d3d4yli4hf5bmh.cloudfront.net/hls/live.m3u8';
+
+    const audio      = document.getElementById('audioEl');
+    const btnPlay    = document.getElementById('btnPlay');
+    const iconPlay   = document.getElementById('iconPlay');
+    const iconPause  = document.getElementById('iconPause');
+    const volSlider  = document.getElementById('volSlider');
+    const statusText = document.getElementById('statusText');
+    const hlsInfo    = document.getElementById('hlsInfo');
+    const eqBars     = document.getElementById('eqBars');
+    const errorBanner = document.getElementById('errorBanner');
+
+    let hls = null;
+    let playing = false;
+
+    function setPlaying(state) {
+      playing = state;
+      iconPlay.style.display  = state ? 'none'  : '';
+      iconPause.style.display = state ? ''      : 'none';
+      btnPlay.setAttribute('aria-label', state ? 'Pause' : 'Play');
+      eqBars.classList.toggle('paused', !state);
+    }
+
+    function setStatus(msg) { statusText.textContent = msg; }
+
+    function showError(msg) {
+      errorBanner.textContent = msg;
+      errorBanner.style.display = 'block';
+    }
+
+    function hideError() {
+      errorBanner.style.display = 'none';
+    }
+
+    function updateVolTrack() {
+      volSlider.style.setProperty('--vol-pct', volSlider.value + '%');
+    }
+
+    function initHls() {
+      if (Hls.isSupported()) {
+        hls = new Hls({ enableWorker: true, lowLatencyMode: false });
+        hls.loadSource(STREAM_URL);
+        hls.attachMedia(audio);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
+          const level = data.levels[hls.currentLevel >= 0 ? hls.currentLevel : 0];
+          if (level) {
+            const sr = level.audioCodec || '';
+            hlsInfo.textContent = `Manifest loaded · ${data.levels.length} level(s) · ${sr || 'HLS'}`;
+          } else {
+            hlsInfo.textContent = 'Manifest loaded';
+          }
+          hideError();
+        });
+
+        hls.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
+          const level = hls.levels[data.level];
+          if (level && level.bitrate) {
+            hlsInfo.textContent = `Bitrate: ${Math.round(level.bitrate / 1000)} kbps`;
+          }
+        });
+
+        hls.on(Hls.Events.ERROR, (_, data) => {
+          if (data.fatal) {
+            showError(`Stream error (${data.type}). Retrying…`);
+            setStatus('Error');
+            if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+              hls.startLoad();
+            } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+              hls.recoverMediaError();
+            } else {
+              hls.destroy();
+              hls = null;
+              setPlaying(false);
+            }
+          }
+        });
+      } else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
+        // Native HLS (Safari)
+        audio.src = STREAM_URL;
+        hlsInfo.textContent = 'Native HLS playback';
+      } else {
+        showError('Your browser does not support HLS streaming.');
+      }
+    }
+
+    async function togglePlay() {
+      hideError();
+
+      if (!playing) {
+        if (!hls && !audio.src) initHls();
+        setStatus('Buffering…');
+        try {
+          await audio.play();
+        } catch (e) {
+          showError('Playback blocked: ' + e.message);
+          setStatus('Stopped');
+        }
+      } else {
+        audio.pause();
+        setStatus('Stopped');
+        setPlaying(false);
+      }
+    }
+
+    audio.addEventListener('playing', () => {
+      setPlaying(true);
+      setStatus('Live');
+    });
+
+    audio.addEventListener('waiting', () => setStatus('Buffering…'));
+    audio.addEventListener('stalled', () => setStatus('Stalled…'));
+    audio.addEventListener('pause',   () => { setPlaying(false); setStatus('Stopped'); });
+
+    btnPlay.addEventListener('click', togglePlay);
+
+    volSlider.addEventListener('input', () => {
+      audio.volume = volSlider.value / 100;
+      updateVolTrack();
+    });
+
+    updateVolTrack();
+  </script>
+</body>
+</html>

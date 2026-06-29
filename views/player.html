@@ -165,23 +165,30 @@
       line-height: 1.2;
       color: var(--charcoal);
       margin-top: 4px;
+      transition: opacity 0.3s;
     }
 
     .track-subtitle {
       font-size: 0.95rem;
       color: #666;
+      transition: opacity 0.3s;
     }
 
     .quality-row {
       margin-top: 6px;
       font-size: 0.8rem;
       color: #888;
+      transition: opacity 0.3s;
     }
 
     .quality-row strong {
       color: var(--charcoal);
       font-weight: 600;
     }
+
+    .track-title.fading,
+    .track-subtitle.fading,
+    .quality-row.fading { opacity: 0; }
 
     /* ── Controls bar ────────────────────────────── */
     .controls {
@@ -335,9 +342,9 @@
             <span class="live-dot"></span>
             Live
           </div>
-          <div class="track-title">Radio Calico</div>
-          <div class="track-subtitle">Lossless continuous stream</div>
-          <div class="quality-row"><strong>Format:</strong> HLS Lossless</div>
+          <div class="track-title" id="trackTitle">—</div>
+          <div class="track-subtitle" id="trackArtist">Loading…</div>
+          <div class="quality-row" id="trackAlbum"></div>
         </div>
 
       </div>
@@ -379,6 +386,45 @@
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
   <script>
     const STREAM_URL = 'https://d3d4yli4hf5bmh.cloudfront.net/hls/live.m3u8';
+
+    const trackTitle  = document.getElementById('trackTitle');
+    const trackArtist = document.getElementById('trackArtist');
+    const trackAlbum  = document.getElementById('trackAlbum');
+
+    let currentTitle = null;
+
+    function fadeUpdate(el, text) {
+      if (el.textContent === text) return;
+      el.classList.add('fading');
+      setTimeout(() => {
+        el.textContent = text;
+        el.classList.remove('fading');
+      }, 300);
+    }
+
+    async function fetchNowPlaying() {
+      try {
+        const res = await fetch('/api/metadata');
+        const data = await res.json();
+        if (data.error) return;
+
+        const changed = data.title !== currentTitle;
+        currentTitle = data.title;
+
+        fadeUpdate(trackTitle, data.title || '—');
+        fadeUpdate(trackArtist, data.artist || '');
+
+        const parts = [data.album, data.date].filter(Boolean);
+        fadeUpdate(trackAlbum, parts.join(' · '));
+
+        if (changed && document.title !== `${data.artist} — ${data.title}`) {
+          document.title = `${data.artist} — ${data.title} · Radio Calico`;
+        }
+      } catch (_) {}
+    }
+
+    fetchNowPlaying();
+    setInterval(fetchNowPlaying, 15000);
 
     const audio        = document.getElementById('audioEl');
     const btnPlay      = document.getElementById('btnPlay');

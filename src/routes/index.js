@@ -2,6 +2,18 @@ const express = require('express');
 const router = express.Router();
 const { backendGet, backendPost } = require('../api');
 
+const METADATA_URL = 'https://d3d4yli4hf5bmh.cloudfront.net/metadatav2.json';
+
+router.get('/metadata', async (req, res) => {
+  try {
+    const response = await fetch(METADATA_URL);
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    res.status(502).json({ error: 'Metadata unavailable', detail: err.message });
+  }
+});
+
 router.get('/ping-backend', async (req, res) => {
   try {
     const data = await backendGet('/api/ping');

@@ -1,0 +1,16 @@
+node_modules/
+venv/
+data/*.db
+data/*.db-shm
+data/*.db-wal
+.env
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes

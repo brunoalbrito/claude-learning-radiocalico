@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>radiocalico</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 60px auto; padding: 0 20px; }
+    h2 { margin-top: 2rem; }
+    form { display: flex; flex-direction: column; gap: 10px; max-width: 360px; }
+    input { padding: 8px; font-size: 1rem; border: 1px solid #ccc; border-radius: 4px; }
+    button { padding: 8px 16px; font-size: 1rem; cursor: pointer; }
+    #message { margin-top: 8px; font-size: 0.9rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; }
+    th { background: #f4f4f4; }
+  </style>
+</head>
+<body>
+  <h1>radiocalico</h1>
+
+  <h2>Add user</h2>
+  <form onsubmit="submitUser(event)">
+    <input type="text" id="name" placeholder="Name" required>
+    <input type="email" id="email" placeholder="Email" required>
+    <button type="submit">Add user</button>
+  </form>
+  <p id="message"></p>
+
+  <h2>Users</h2>
+  <table>
+    <thead><tr><th>ID</th><th>Name</th><th>Email</th></tr></thead>
+    <tbody id="users"></tbody>
+  </table>
+
+  <script>
+    async function loadUsers() {
+      const res = await fetch('/api/users');
+      const users = await res.json();
+      const tbody = document.getElementById('users');
+      tbody.innerHTML = users.length
+        ? users.map(u => `<tr><td>${u.id}</td><td>${u.name}</td><td>${u.email}</td></tr>`).join('')
+        : '<tr><td colspan="3">No users yet</td></tr>';
+    }
+
+    async function submitUser(e) {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const msg = document.getElementById('message');
+
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        msg.style.color = 'green';
+        msg.textContent = `User "${data.name}" added (id ${data.id})`;
+        e.target.reset();
+        loadUsers();
+      } else {
+        msg.style.color = 'red';
+        msg.textContent = data.error || 'Something went wrong';
+      }
+    }
+
+    loadUsers();
+  </script>
+</body>
+</html>
